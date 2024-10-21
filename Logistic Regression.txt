@@ -1,0 +1,79 @@
+# Import necessary libraries
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, roc_auc_score, roc_curve
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Sample Data (Replace with your dataset)
+data = {
+    'HeartRate': [72, 80, 65, 90, 100, 75, 85, 60, 82, 88, 92, 76],
+    'Temperature': [98.6, 99.1, 97.9, 100.5, 101.2, 98.3, 98.9, 97.5, 98.7, 99.0, 100.1, 98.2],
+    'BloodPressure': [120, 130, 115, 140, 145, 118, 135, 110, 125, 138, 142, 119],
+    'OxygenSaturation': [98, 97, 99, 95, 94, 98, 96, 99, 98, 97, 95, 96],
+    'Condition': [0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0]  # Labels: 0 = Healthy, 1 = Not Healthy
+}
+
+# Load the data into a pandas DataFrame
+df = pd.DataFrame(data)
+
+# Split the data into features (X) and target (y)
+X = df.drop('Condition', axis=1)
+y = df['Condition']
+
+# Step 1: Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Step 2: Preprocessing - Standardize the data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Step 3: Initialize and train a Logistic Regression model
+model = LogisticRegression(random_state=42)
+model.fit(X_train, y_train)
+
+# Step 4: Test the model on the test data
+y_pred = model.predict(X_test)
+y_pred_proba = model.predict_proba(X_test)[:, 1]  # For ROC curve and AUC score
+
+# Step 5: Evaluation Metrics
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy * 100:.2f}%")
+
+# Confusion Matrix
+print("Confusion Matrix:")
+conf_matrix = confusion_matrix(y_test, y_pred)
+print(conf_matrix)
+
+# Classification Report (Precision, Recall, F1-Score)
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# ROC-AUC Score
+roc_auc = roc_auc_score(y_test, y_pred_proba)
+print(f"ROC AUC Score: {roc_auc:.2f}")
+
+# Plot Confusion Matrix
+plt.figure(figsize=(6, 4))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', cbar=False)
+plt.title("Confusion Matrix")
+plt.ylabel("Actual Label")
+plt.xlabel("Predicted Label")
+plt.show()
+
+# Plot ROC Curve
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, label=f"ROC curve (area = {roc_auc:.2f})")
+plt.plot([0, 1], [0, 1], linestyle='--', color='r')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC)')
+plt.legend(loc="lower right")
+plt.show()

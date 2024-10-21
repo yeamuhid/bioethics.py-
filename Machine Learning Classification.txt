@@ -1,0 +1,18 @@
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report
+
+# Dummy dataset (features and labels)
+X = np.array([features])  # Features extracted from NDVI
+y = np.array([0])  # Label: 0 -> healthy, 1 -> diseased
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+# SVM Classifier
+clf = SVC(kernel='linear')
+clf.fit(X_train, y_train)
+
+# Prediction
+y_pred = clf.predict(X_test)
+print(classification_report(y_test, y_pred))
